@@ -1,0 +1,117 @@
+{
+  "name": "workshop-pro",
+  "version": "1.0.0",
+  "description": "Offline-first automobile workshop management ERP",
+  "main": "dist-electron/main.cjs",
+  "author": "Workshop Pro",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev": "npm run build:electron && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "npm run build:renderer && npm run build:electron",
+    "build:renderer": "vite build",
+    "build:electron": "node scripts/build-electron.mjs",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "pack": "prisma generate && npm run build && electron-builder",
+    "pack:win": "prisma generate && npm run build && electron-builder --win",
+    "pack:mac": "prisma generate && npm run build && electron-builder --mac",
+    "pack:mac:unsigned": "CSC_IDENTITY_AUTO_DISCOVERY=false prisma generate && npm run build && electron-builder --mac",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "bcryptjs": "^3.0.2",
+    "date-fns": "^4.1.0",
+    "electron-updater": "^6.6.2",
+    "lucide-react": "^0.511.0",
+    "pdfkit": "^0.17.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.1",
+    "recharts": "^2.15.3",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.15.21",
+    "@types/pdfkit": "^0.13.9",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "electron": "^36.3.1",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.4",
+    "postcss": "^8.5.3",
+    "prisma": "^6.8.2",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.workshoppro.app",
+    "productName": "Workshop Pro",
+    "directories": {
+      "output": "release"
+    },
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/.prisma/**/*",
+      "**/*.node"
+    ],
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      {
+        "from": "node_modules/.prisma/client",
+        "to": "node_modules/.prisma/client",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "node_modules/@prisma/client",
+        "to": "node_modules/@prisma/client",
+        "filter": ["**/*"]
+      },
+      "prisma/schema.prisma"
+    ],
+    "extraResources": [
+      {
+        "from": "legal",
+        "to": "legal",
+        "filter": ["**/*"]
+      }
+    ],
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://releases.example.com/workshop-pro/"
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "publisherName": "Workshop Pro"
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.business",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": false
+    },
+    "dmg": {
+      "title": "Workshop Pro"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  MECHANIC
+}
+
+enum JobStatus {
+  PENDING
+  IN_PROGRESS
+  WAITING_PARTS
+  COMPLETED
+  DELIVERED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+}
+
+enum InventoryCategory {
+  ENGINE_PARTS
+  OIL
+  TIRES
+  ELECTRICAL
+  ACCESSORIES
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  LEAVE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  pinHash      String
+  role         UserRole @default(STAFF)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  sessions     Session[]
+  jobCards     JobCard[] @relation("AssignedMechanic")
+  attendance            Attendance[]
+  dismissedNotifications DismissedNotification[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  name      String
+  mobile    String
+  address   String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  vehicles  Vehicle[]
+  jobCards  JobCard[]
+  invoices  Invoice[]
+}
+
+model Vehicle {
+  id              String    @id @default(cuid())
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicleNumber   String
+  brand           String?
+  model           String?
+  fuelType        String?
+  kmReading       Int?
+  insuranceExpiry DateTime?
+  insuranceNotes  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  jobCards        JobCard[]
+
+  @@index([customerId])
+  @@index([vehicleNumber])
+}
+
+model JobCard {
+  id                  String     @id @default(cuid())
+  jobNumber           String     @unique
+  customerId          String
+  customer            Customer   @relation(fields: [customerId], references: [id])
+  vehicleId           String
+  vehicle             Vehicle    @relation(fields: [vehicleId], references: [id])
+  mechanicId          String?
+  mechanic            User?      @relation("AssignedMechanic", fields: [mechanicId], references: [id])
+  status              JobStatus  @default(PENDING)
+  complaint           String?
+  notes               String?
+  estimatedCompletion DateTime?
+  laborTotal          Float      @default(0)
+  partsTotal          Float      @default(0)
+  discount            Float      @default(0)
+  gstPercent          Float      @default(18)
+  grandTotal          Float      @default(0)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  deliveredAt         DateTime?
+  services            JobService[]
+  parts               JobPart[]
+  images              JobImage[]
+  invoice             Invoice?
+
+  @@index([status])
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model JobService {
+  id          String  @id @default(cuid())
+  jobCardId   String
+  jobCard     JobCard @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  laborCharge Float   @default(0)
+  quantity    Int     @default(1)
+}
+
+model JobPart {
+  id            String    @id @default(cuid())
+  jobCardId     String
+  jobCard       JobCard   @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
+  inventoryId   String?
+  inventory     Inventory? @relation(fields: [inventoryId], references: [id])
+  partName      String
+  quantity      Int       @default(1)
+  unitPrice     Float     @default(0)
+  total         Float     @default(0)
+}
+
+model JobImage {
+  id        String   @id @default(cuid())
+  jobCardId String
+  jobCard   JobCard  @relation(fields: [jobCardId], references: [id], onDelete: Cascade)
+  filePath  String
+  caption   String?
+  createdAt DateTime @default(now())
+}
+
+model Supplier {
+  id        String      @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  notes     String?
+  createdAt DateTime    @default(now())
+  inventory Inventory[]
+}
+
+model Inventory {
+  id            String            @id @default(cuid())
+  sku           String            @unique
+  name          String
+  category      InventoryCategory @default(ACCESSORIES)
+  quantity      Int               @default(0)
+  minStock      Int               @default(5)
+  purchasePrice Float             @default(0)
+  sellingPrice  Float             @default(0)
+  supplierId    String?
+  supplier      Supplier?         @relation(fields: [supplierId], references: [id])
+  description   String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  stockHistory  StockHistory[]
+  jobParts      JobPart[]
+
+  @@index([category])
+  @@index([name])
+}
+
+model StockHistory {
+  id          String    @id @default(cuid())
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  changeQty   Int
+  reason      String
+  reference   String?
+  createdAt   DateTime  @default(now())
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  jobCardId     String?       @unique
+  jobCard       JobCard?      @relation(fields: [jobCardId], references: [id])
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  subtotal      Float         @default(0)
+  laborTotal    Float         @default(0)
+  partsTotal    Float         @default(0)
+  discount      Float         @default(0)
+  gstPercent    Float         @default(18)
+  gstAmount     Float         @default(0)
+  grandTotal    Float         @default(0)
+  paidAmount    Float         @default(0)
+  status        PaymentStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  payments      Payment[]
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  invoiceId String
+  invoice   Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount    Float
+  method    PaymentMethod @default(CASH)
+  reference String?
+  notes     String?
+  createdAt DateTime      @default(now())
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  status    AttendanceStatus @default(PRESENT)
+  checkIn   String?
+  checkOut  String?
+  notes     String?
+  createdAt DateTime         @default(now())
+
+  @@unique([userId, date])
+}
+
+model DismissedNotification {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationKey String
+  dismissedAt     DateTime @default(now())
+
+  @@unique([userId, notificationKey])
+  @@index([userId])
+}
+
+model WorkshopSettings {
+  id              String  @id @default("default")
+  workshopName    String  @default("My Auto Workshop")
+  address         String?
+  phone           String?
+  email           String?
+  gstNumber       String?
+  defaultGst      Float   @default(18)
+  invoicePrefix   String  @default("INV")
+  jobCardPrefix   String  @default("JC")
+  autoBackup      Boolean @default(true)
+  backupIntervalH Int     @default(24)
+}
