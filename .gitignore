@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist-electron/
+release/
+*.db
+*.db-journal
+.env.local
+.DS_Store
+userData/
+backups/
+uploads/

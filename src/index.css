@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-brand-mid/60;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  html {
+    @apply antialiased;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-brand-parchment text-brand-charcoal;
+  }
+
+  ::selection {
+    background: rgba(193, 95, 60, 0.25);
+    color: #141413;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-brand-light;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-brand-mid/50;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-mid;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-sm font-medium transition-all duration-150 disabled:opacity-45 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-terracotta text-brand-parchment hover:bg-brand-terracotta-light shadow-glow font-semibold;
+  }
+
+  .btn-secondary {
+    @apply btn bg-brand-white text-brand-charcoal border border-brand-mid hover:bg-brand-light hover:border-brand-terracotta/40;
+  }
+
+  .btn-danger {
+    @apply btn bg-brand-error-bg text-brand-error border border-brand-error/20 hover:bg-brand-error/10;
+  }
+
+  .btn-ghost {
+    @apply btn text-brand-mid hover:bg-brand-light hover:text-brand-charcoal;
+  }
+
+  .input {
+    @apply w-full rounded-[10px] border border-brand-mid bg-brand-white px-4 py-2.5 text-sm text-brand-charcoal placeholder:text-brand-mid/80 focus:border-brand-terracotta focus:outline-none focus:ring-2 focus:ring-brand-terracotta/20 transition-colors;
+  }
+
+  .card {
+    @apply rounded-[12px] border border-brand-mid/50 bg-brand-white p-5 shadow-card;
+  }
+
+  .stat-card {
+    @apply rounded-[12px] border border-brand-mid/40 bg-brand-light p-5 shadow-card flex flex-col gap-1 hover:border-brand-terracotta/35 hover:shadow-card-hover transition-all duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium tracking-wide;
+  }
+
+  .table-container {
+    @apply overflow-auto rounded-[12px] border border-brand-mid/50 bg-brand-white shadow-card;
+  }
+
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table th {
+    @apply bg-brand-light px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-brand-mid;
+  }
+
+  .data-table td {
+    @apply border-t border-brand-mid/30 px-4 py-3 text-brand-charcoal;
+  }
+
+  .data-table tbody tr {
+    @apply transition-colors;
+  }
+
+  .data-table tbody tr:hover td {
+    @apply bg-brand-light/80;
+  }
+
+  .page-enter {
+    @apply animate-slide-up;
+  }
+
+  .accent-text {
+    @apply text-brand-terracotta;
+  }
+
+  .divider {
+    @apply h-px bg-brand-mid/40;
+  }
+
+  .label {
+    @apply mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-brand-mid;
+  }
+
+  /* Dark charcoal panel (sidebar, login hero) */
+  .panel-dark {
+    @apply bg-brand-charcoal text-brand-parchment;
+  }
+
+  .panel-dark .btn-ghost {
+    @apply text-brand-mid hover:bg-brand-charcoal hover:text-brand-parchment;
+  }
+}
